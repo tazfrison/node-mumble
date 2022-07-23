@@ -34,6 +34,7 @@ export interface OutputStream extends NodeJS.ReadableStream {
 }
 export interface Channel {
     addSubChannel: (name: string, options: any) => void;
+    getPath: () => string[];
     getPermissions: (callback: () => any) => void;
     join: () => void;
     remove: () => void;
@@ -43,6 +44,7 @@ export interface Channel {
     users: User[];
     name: string;
     id: number;
+    parent?: Channel;
     position: number;
 }
 
@@ -71,6 +73,8 @@ export interface User {
     setComment: (comment: string) => void;
     setSelfDeaf: (isSelfDeaf: boolean) => void;
     setSelfMute: (isSelfMute: boolean) => void;
+    setDeaf: (isDeaf: boolean) => void;
+    setMute: (isMute: boolean) => void;
     on: (event: string, callback: (...args: any[]) => any) => void;
     once: (event: string, callback: (...args: any[]) => any) => void;
     register: () => void;
@@ -87,19 +91,26 @@ export interface Connection {
     users: () => User[];
     channelById: (id: number) => Channel;
     userById: (id: number) => User;
+    userBySession: (id: number) => User;
     channelByName: (name: string) => Channel;
     userByName: (name: string) => User;
-    sendMessage: (name: string, data: string) => void;
+    sendMessage: (name: string, data: any) => void;
     outputStream: (userId?: number) => OutputStream;
     inputStream: () => InputStream;
     disconnect: () => void;
     sendVoice: (chunk: Buffer) => void;
     on: (event: string, callback: (...args: any[]) => any) => void;
     once: (event: string, callback: (...args: any[]) => any) => void;
+    removeListener: (eventName: string | symbol, listener: (...args: any[]) => void) => void;
     ready: boolean;
     rootChannel: Channel;
     user: User;
     getRegisteredUsers: (callback: (registeredUsers: any[]) => void) => void;
 }
 
-export function connect(url: string, options: Options, callback: (err: Error, connection: Connection) => void): void;
+export interface Client extends Connection {
+    connection: Connection;
+    sendMessage: (name: string, data: string) => void;
+}
+
+export function connect(url: string, options: Options, callback: (err: Error, client: Client) => void): void;
